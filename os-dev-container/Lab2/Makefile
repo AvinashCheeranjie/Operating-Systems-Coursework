@@ -1,13 +1,17 @@
 CC = gcc
 CFLAGS = -pthread -O2 -Wall -Wextra
-TARGET = part2
-SRC = lab2part2.c
+SRC1 = lab2part1.c
+SRC2=lab2part2.c
 
-all:
-	$(CC) $(CFLAGS) $(SRC) -o $(TARGET)
+all: lab2part1 lab2part2
+
+lab2part1: 
+	$(CC) $(SRC1) $(CFLAGS) -o $@ $^
+
+lab2part2: 
+	$(CC) $(SRC2) $(CFLAGS) -o $@ $^
 
 clean:
-	rm -f $(TARGET)
+	rm -rf lab2part1 lab2part2
 
 .PHONY: all clean
-
