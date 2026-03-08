@@ -17,8 +17,8 @@ void *withdraw(void *value);
 int main(int argc, char *argv[])
 {
     pthread_t tids[NUM_THREADS]; // array to hold thread ids
-
-    if (sem_init(&sem_d, 0, 1) != 0) { // initialize deposit semaphore
+    // initialize deposit semaphore for 4 instances since max amount of 400 at 100 per deposit
+    if (sem_init(&sem_d, 0, 4) != 0) { 
         printf("Error in initializing deposit semaphore\n");
         return -1;
     }
@@ -51,7 +51,6 @@ int main(int argc, char *argv[])
             }
         }
     }
-
     for (int i = 0; i < NUM_THREADS; i++) { // join all threads for completion
         pthread_join(tids[i], NULL);
     }
@@ -70,15 +69,7 @@ void *deposit(void *value)
     int prev = amount;
     amount += val;
     printf("Deposit amount: %d\n", amount);
-
-    if (prev <= 0 && amount > 0) { // enable withdraw semaphore if amount was <= 0 before deposit
-        sem_post(&sem_w);
-    }
-
-    if (amount < 400) { // enable deposit semaphore if amount is still < 400
-        sem_post(&sem_d);
-    }
-
+    sem_post(&sem_w);             // post on withdraw semaphore
     pthread_mutex_unlock(&mutex); // unlock mutex after critical section
     pthread_exit(0);
 }
@@ -93,15 +84,7 @@ void *withdraw(void *value)
     int prev = amount;
     amount -= val;
     printf("Withdrawal amount: %d\n", amount);
-
-    if (prev >= 400 && amount < 400) { // enable deposit semaphore if amount was >= 400 before withdraw
-        sem_post(&sem_d);
-    }
-
-    if (amount > 0) { // enable withdraw semaphore is amount is still > 0
-        sem_post(&sem_w);
-    }
-
+    sem_post(&sem_d);             // post on deposit semaphore
     pthread_mutex_unlock(&mutex); // unlock mutex after critical section
     pthread_exit(0);
 }
